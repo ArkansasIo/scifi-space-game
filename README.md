@@ -60,7 +60,7 @@ game/      player.c++, battle.c++, items.c++, story.c++, campaign.c++,
            difficulty.c++, modifier.c++, score.c++, save.c++,
            combat.c++, threat.c++, encounter.c++, loot.c++, ai.c++,
            progression.c++, galaxy.c++, turn.c++, scheduler.c++,
-           menus.c++, gamelogic.c++
+           gameplay.c++, menus.c++, gamelogic.c++
 ```
 
 Or manually, passing the same list:
@@ -105,7 +105,8 @@ Startup flow: bootloader banner → loading screen → title menu → story
 opening → explore loop.
 
 Controls: `F` forward, `B` backward, `S` starboard, `P` port, `C` stats,
-`I` inventory, `M` map menu, `V` empire menu, `T` turn menu, `Q` quit.
+`I` inventory, `M` map menu, `V` empire menu, `T` turn menu,
+`G` gameplay menu, `Q` quit.
 
 ### Menus
 
@@ -113,6 +114,7 @@ Controls: `F` forward, `B` backward, `S` starboard, `P` port, `C` stats,
 | --- | --- | --- |
 | `M` | Map | Universe overview · Sectors · Systems · Current system · Interstellar objects · Jump routes · Biome list · Class tree |
 | `V` | Empire | Character sheet · Empire dashboard · Fleet · Ship database · Boss roster · Item browser |
+| `G` | Gameplay | Cargo hold · Market · Colonies · Settle a world · Skills · Reputation · Contracts · Materials · Crafting · Codex · Sensor sweep |
 | `T` | Turn | Status · History · Steps · Scheduled jobs · Advance one turn |
 
 Every sub-menu is a numbered list: digits pick, `0` returns to the parent.
@@ -126,7 +128,7 @@ spacebattlerpg/
 ├── config/                    game.ini, database.ini
 ├── docs/                      Design and reference documentation (17 files)
 ├── scripts/                   Lua content: init, hooks, items/, effects/, bosses/
-├── include/                   Headers (69)
+├── include/                   Headers (70)
 │   ├── spacebattlerpg.h       Master header - include this from every source
 │   ├── core/                  types, globals, input
 │   ├── data/                  Ship tables, content tables, starships
@@ -139,7 +141,7 @@ spacebattlerpg/
 │   ├── client/                thin client and CLI
 │   ├── ui/                    display, navigation, titlescreen, hud
 │   └── game/                  Game modules + framework logic + menus
-└── src/                       Implementation (62)
+└── src/                       Implementation (63)
     ├── main.c++               Entry point and game loop
     ├── core/                  Global data, space map, input helpers
     ├── data/                  Ship tables and framework content tables
