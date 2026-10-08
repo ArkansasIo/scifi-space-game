@@ -56,6 +56,8 @@ $sources = @(
     "src/world/universe_gen.c++",
     "src/world/biome.c++",
 
+    "src/server/protocol.c++",
+    "src/server/server.c++",
     "src/server/account.c++",
 
     "src/game/player.c++",
