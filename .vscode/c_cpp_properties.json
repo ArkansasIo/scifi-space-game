@@ -1,0 +1,36 @@
+{
+    "configurations": [
+        {
+            "name": "Space Battle Wars RPG",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/core",
+                "${workspaceFolder}/include/data",
+                "${workspaceFolder}/include/world",
+                "${workspaceFolder}/include/game",
+                "${workspaceFolder}/include/library",
+                "${workspaceFolder}/include/engine",
+                "${workspaceFolder}/include/ui",
+                "${workspaceFolder}/include/db",
+                "${workspaceFolder}/include/audio",
+                "${workspaceFolder}/include/server",
+                "${workspaceFolder}/include/client"
+            ],
+            "defines": [],
+            "compilerPath": "clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "${workspaceFolder}/src"
+                ],
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "forcedInclude": [],
+            "compilerArgs": ["-std=c++17", "-Iinclude"]
+        }
+    ],
+    "version": 4
+}

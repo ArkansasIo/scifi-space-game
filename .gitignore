@@ -1,0 +1,31 @@
+# Build output
+spacebattlerpg.exe
+*.exe
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# Editor / IDE
+.vscode/ipch/
+.vscode/*.log
+*.suo
+*.user
+*.vcxproj.user
+
+# Generated data
+data/export/
+data/import/
+data/accounts.dat
+
+# Runtime / debug artefacts
+test_input.txt
+_c.c++
+_cppcheck.txt
+*.tmp
+*.log
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
