@@ -26,6 +26,7 @@ $sources = @(
     "src/data/loot.c++",
     "src/data/encounters.c++",
     "src/data/factions.c++",
+    "src/data/starships.c++",
 
     "src/library/arraydata.c++",
     "src/library/stats.c++",
@@ -52,6 +53,11 @@ $sources = @(
     "src/ui/titlescreen.c++",
     "src/ui/hud.c++",
 
+    "src/world/universe_gen.c++",
+    "src/world/biome.c++",
+
+    "src/server/account.c++",
+
     "src/game/player.c++",
     "src/game/battle.c++",
     "src/game/items.c++",
@@ -69,6 +75,9 @@ $sources = @(
     "src/game/ai.c++",
     "src/game/progression.c++",
     "src/game/galaxy.c++",
+    "src/game/turn.c++",
+    "src/game/scheduler.c++",
+    "src/game/menus.c++",
     "src/game/gamelogic.c++"
 )
 

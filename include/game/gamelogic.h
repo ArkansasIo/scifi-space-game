@@ -18,6 +18,11 @@ void initializeFramework();
 // Tear down and reset live state (effects, threat, encounters).
 void resetFrameworkState();
 
+// Give the player a small starting squadron so the fleet and empire
+// screens have content before the first battle.  Called by
+// initializeFramework(); safe to call again to re-seed.
+void seedPlayerFleet();
+
 // ---- feature entry points ----
 
 // Print a character sheet from a stat block.

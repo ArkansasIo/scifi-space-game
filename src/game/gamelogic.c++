@@ -78,6 +78,74 @@ void initializeFramework()
     g_frameworkReady = 1;
 }
 
+// A small starting squadron: one light cruiser as flagship, two escorts.
+void seedPlayerFleet()
+{
+    clearFleet(playerFleet);
+
+    strncpy(playerFleet.name, "Home Squadron", sizeof(playerFleet.name) - 1);
+    playerFleet.name[sizeof(playerFleet.name) - 1] = '\0';
+
+    // Hull indices come from the same order as data/starships.c++.
+    int cruiser = findShipClass("Vigil Cruiser");
+    int corvette = findShipClass("Sabre Corvette");
+    int frigate = findShipClass("Bulwark Frigate");
+
+    if (cruiser < 0)
+        cruiser = 0;
+    if (corvette < 0)
+        corvette = 0;
+    if (frigate < 0)
+        frigate = 0;
+
+    const shipclassdef *hull = shipClassAt(cruiser);
+
+    shipinstance &flagship = playerFleet.ships[0];
+    memset(&flagship, 0, sizeof(flagship));
+    strncpy(flagship.name, charactership.name, sizeof(flagship.name) - 1);
+    flagship.name[sizeof(flagship.name) - 1] = '\0';
+    flagship.shipClass = cruiser;
+    flagship.hull = hull->hullHP;
+    flagship.shields = hull->shieldHP;
+    flagship.firepower = hull->weaponSlots * 40;
+    flagship.crewSkill = 100;
+    flagship.techLevel = 100;
+    flagship.supplyUse = hull->supplyUse;
+    playerFleet.shipCount = 1;
+
+    const shipclassdef *escortHulls[2];
+    escortHulls[0] = shipClassAt(corvette);
+    escortHulls[1] = shipClassAt(frigate);
+
+    static const char *escortNames[2] = {"Sabre", "Bulwark"};
+
+    for (int i = 0; i < 2; ++i)
+    {
+        const shipclassdef *escort = escortHulls[i];
+
+        shipinstance &ship = playerFleet.ships[playerFleet.shipCount];
+        memset(&ship, 0, sizeof(ship));
+
+        strncpy(ship.name, escortNames[i], sizeof(ship.name) - 1);
+        ship.name[sizeof(ship.name) - 1] = '\0';
+        ship.shipClass = (i == 0) ? corvette : frigate;
+        ship.hull = escort->hullHP;
+        ship.shields = escort->shieldHP;
+        ship.firepower = escort->weaponSlots * 40;
+        ship.crewSkill = 100;
+        ship.techLevel = 100;
+        ship.supplyUse = escort->supplyUse;
+
+        playerFleet.shipCount++;
+    }
+
+    // Command capacity must cover the squadron, or the fleet screen reports
+    // it as over capacity from the first frame.
+    playerFleet.commandCapacity = fleetSupplyUse(playerFleet) + 5;
+
+    recalcFleet(playerFleet);
+}
+
 void resetFrameworkState()
 {
     g_pvpEnabled = 0;

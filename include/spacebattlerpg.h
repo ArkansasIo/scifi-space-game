@@ -43,6 +43,11 @@ using namespace std;
 /* The framework library: arrays, stat math, effects, item value, scaling. */
 #include "library/library.h"
 
+/* World generation: procedural universe, biomes, classes, starships. */
+#include "world/universe_gen.h"
+#include "world/biome.h"
+#include "data/starships.h"
+
 /* Audio: cue dispatcher and sound manifest. */
 #include "audio/audio.h"
 #include "audio/manifest.h"
@@ -72,6 +77,8 @@ using namespace std;
 #include "game/encounter.h"
 #include "game/progression.h"
 #include "game/galaxy.h"
+#include "game/turn.h"
+#include "game/scheduler.h"
 
 /* The engine kernel and its subsystems.  Included after game/ so the engine
    headers can see the shared runtime types they operate on. */
@@ -89,5 +96,6 @@ using namespace std;
 #include "ui/hud.h"
 
 #include "game/gamelogic.h"
+#include "game/menus.h"
 
 #endif /* SPACEBATTLERPG_H */

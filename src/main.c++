@@ -35,7 +35,7 @@ int main()
     initializeModifier();
 
     /* ---- framework: loading screen drives the initializers ---- */
-    runLoadingScreen(6);
+    runLoadingScreen(9);
 
     loadingStep("stat weights and caps");
     loadingStep("effects, enemies and affixes");
@@ -43,9 +43,37 @@ int main()
     loadingStep("loot tables and encounters");
 
     initializeFramework();
+
+    // Content that the procedural universe reads while generating: it needs
+    // the faction table (for ownership) and the biome/class tables (for world
+    // detail), so both must be populated first.
+    loadingStep("biomes and classes");
+    initializeBiomes();
+    initializeClasses();
+
+    loadingStep("starships and components");
+    initializeStarships();
+    initializeWeapons();
+    initializeComponents();
+
+    // The starting squadron reads the starship table, so it must be seeded
+    // after initializeStarships() - not inside initializeFramework().
+    seedPlayerFleet();
+
+    // The 4X galaxy map (hand-authored 17 systems) and the procedural
+    // universe (seeded, 32 systems with moons, gates and anomalies).
+    loadingStep("4X galaxy map");
     initializeGalaxy();
 
-    loadingStep("galaxy map");
+    loadingStep("procedural universe");
+    generateUniverse(0xB47A1EC5u);
+
+    // Turn machine and its scheduled jobs.
+    loadingStep("turn system and scheduler");
+    turnInit();
+    schedulerInit();
+    schedulerInstallDefaults();
+
     endLoadingScreen();
 
     /* ---- title screen ---- */
@@ -93,6 +121,24 @@ int main()
         else if (move == 'Q')
         {
             break;
+        }
+        else if (move == 'M')
+        {
+            // Map / universe menus.
+            universeMenu();
+            continue;
+        }
+        else if (move == 'V')
+        {
+            // Empire / roster menus.
+            empireMenu();
+            continue;
+        }
+        else if (move == 'T')
+        {
+            // Turn / scheduler status.
+            turnMenu();
+            continue;
         }
         else
         {
