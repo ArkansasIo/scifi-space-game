@@ -37,6 +37,7 @@ data/      technology.c++, upgrades.c++, artifact.c++, glyph.c++,
            enchantment.c++, enemyships.c++
            stats.c++, effects.c++, archetypes.c++, affixes.c++,
            bosses.c++, gear.c++, loot.c++, encounters.c++, factions.c++
+           starships.c++
 
 library/   arraydata.c++, stats.c++, effects.c++, itemvalue.c++,
            scaling.c++, lua.c++
@@ -49,12 +50,17 @@ audio/     audio.c++, manifest.c++
 
 db/        schema.c++, db.c++
 
+world/     universe_gen.c++, biome.c++
+
+server/    account.c++
+
 ui/        display.c++, titlescreen.c++, hud.c++
 
 game/      player.c++, battle.c++, items.c++, story.c++, campaign.c++,
            difficulty.c++, modifier.c++, score.c++, save.c++,
            combat.c++, threat.c++, encounter.c++, loot.c++, ai.c++,
-           progression.c++, galaxy.c++, gamelogic.c++
+           progression.c++, galaxy.c++, turn.c++, scheduler.c++,
+           menus.c++, gamelogic.c++
 ```
 
 Or manually, passing the same list:
@@ -99,7 +105,17 @@ Startup flow: bootloader banner → loading screen → title menu → story
 opening → explore loop.
 
 Controls: `F` forward, `B` backward, `S` starboard, `P` port, `C` stats,
-`I` inventory, `Q` quit.
+`I` inventory, `M` map menu, `V` empire menu, `T` turn menu, `Q` quit.
+
+### Menus
+
+| Key | Menu | Sub-menus |
+| --- | --- | --- |
+| `M` | Map | Universe overview · Sectors · Systems · Current system · Interstellar objects · Jump routes · Biome list · Class tree |
+| `V` | Empire | Character sheet · Empire dashboard · Fleet · Ship database · Boss roster · Item browser |
+| `T` | Turn | Status · History · Steps · Scheduled jobs · Advance one turn |
+
+Every sub-menu is a numbered list: digits pick, `0` returns to the parent.
 
 ## Layout
 
@@ -108,20 +124,22 @@ spacebattlerpg/
 ├── build.ps1                  Build script (Ctrl+Shift+B in VS Code)
 ├── .vscode/                   Editor config: include paths, build task
 ├── config/                    game.ini, database.ini
-├── docs/                      FRAMEWORK.md, GDD.md
+├── docs/                      Design and reference documentation (17 files)
 ├── scripts/                   Lua content: init, hooks, items/, effects/, bosses/
-├── include/                   Headers (58)
+├── include/                   Headers (69)
 │   ├── spacebattlerpg.h       Master header - include this from every source
-│   ├── core/                  types.h, globals.h, input.h
-│   ├── data/                  Original ship tables + framework tables
+│   ├── core/                  types, globals, input
+│   ├── data/                  Ship tables, content tables, starships
 │   ├── library/               arraydata, stats, effects, itemvalue, scaling, lua
-│   ├── engine/                subsystem contract + 6 engines
-│   ├── audio/                 audio.h, manifest.h
-│   ├── db/                    db.h, schema.h
-│   ├── ui/                    display.h, titlescreen.h, hud.h
-│   ├── world/                 universe.h
-│   └── game/                  Original game modules + framework logic
-└── src/                       Implementation (55)
+│   ├── engine/                Subsystem contract + 6 engines
+│   ├── audio/                 Cue dispatcher and sound manifest
+│   ├── db/                    MySQL schema and CSV export
+│   ├── world/                 universe_gen, biome, universe
+│   ├── server/                protocol, server core, accounts
+│   ├── client/                thin client and CLI
+│   ├── ui/                    display, navigation, titlescreen, hud
+│   └── game/                  Game modules + framework logic + menus
+└── src/                       Implementation (62)
     ├── main.c++               Entry point and game loop
     ├── core/                  Global data, space map, input helpers
     ├── data/                  Ship tables and framework content tables
@@ -130,8 +148,10 @@ spacebattlerpg/
     │                          loot / progression engines
     ├── audio/                 Cue dispatcher and sound manifest
     ├── db/                    MySQL schema and CSV export
+    ├── world/                 Procedural universe generation, biomes
+    ├── server/                Accounts, registration and authentication
     ├── ui/                    Display, title/boot/loading, HUD
-    └── game/                  Original game modules + framework logic
+    └── game/                  Game modules + menus + turn + scheduler
 ```
 
 ## Architecture
@@ -204,11 +224,17 @@ resolves standalone.
 | Original game (map, battle, items, story, score, save) | working |
 | Stat model, effects, item value, scaling | working |
 | Engine kernel + 6 engines | working |
-| UI: display, boot, title, loading, HUD | working |
+| UI: display, navigation, boot, title, loading, HUD | working |
+| Menus: Map / Empire / Turn with sub-menus | working |
+| Procedural universe (32 systems, moons, gates, anomalies) | working |
+| Biomes (28), classes (20), starships (13 hulls) | working |
+| Turn system + scheduler (8 jobs) | working |
+| 12 acts / 50 chapters | working |
 | Audio cue dispatcher + manifest | working (null backend) |
 | MySQL / CSV persistence | CSV working; MySQL needs `SBW_ENABLE_MYSQL` |
 | Lua scripting | stub; hook dispatch works, needs `SBW_ENABLE_LUA` |
-| 12 acts / 50 chapters | working |
+| Accounts (register / login / logout) | working |
+| Server core, protocol, client | headers only |
 | 4X layer (systems, planets, fleets, diplomacy) | seeded, not yet simulated |
 
 The build is clean under `-Wall -Wextra`: zero warnings, zero errors.

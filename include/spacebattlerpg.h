@@ -97,5 +97,6 @@ using namespace std;
 
 #include "game/gamelogic.h"
 #include "game/menus.h"
+#include "game/gameplay.h"
 
 #endif /* SPACEBATTLERPG_H */

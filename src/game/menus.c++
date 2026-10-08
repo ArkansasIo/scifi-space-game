@@ -376,10 +376,19 @@ void menuAdvanceTurn()
 
     schedulerUpdateCountdowns(turnNumber());
 
+    // Player-facing systems advance with the world.
+    gameplayTick(turnNumber());
+
     drawField("Jobs fired", fired);
     drawField("Turn steps run", steps);
     drawField("Now on turn", turnNumber());
     drawFieldText("Calendar", turnSeasonName());
+
+    cout << endl;
+
+    char summary[128];
+    gameplaySummarise(summary, sizeof(summary));
+    out(summary);
 
     cout << endl;
 
@@ -409,4 +418,348 @@ void turnMenu()
         menuAdvanceTurn};
 
     runSubMenu("Turn", entries, handlers, 5);
+}
+
+/* ---------------- gameplay sub-menus ---------------- */
+
+void menuCargo()
+{
+    playerprofile &profile = gameplayProfile();
+
+    drawHeader("Cargo Hold");
+
+    drawField("Credits", profile.cargo.credits);
+    drawField("Capacity", profile.cargo.capacity);
+    drawField("Used", cargoUsed(profile.cargo));
+    drawField("Free", cargoFree(profile.cargo));
+
+    cout << endl;
+
+    for (int i = 0; i < profile.cargo.stackCount && i < MAX_CARGO; ++i)
+    {
+        const cargostack &stack = profile.cargo.stacks[i];
+
+        cout << "  " << stack.name;
+
+        int length = (int)strlen(stack.name);
+        for (int pad = length; pad < 18; ++pad)
+            cout << ' ';
+
+        cout << "  x" << stack.quantity
+             << "  paid " << stack.buyPrice << " cr" << endl;
+    }
+
+    if (profile.cargo.stackCount == 0)
+        out("(empty)");
+
+    cout << endl;
+}
+
+void menuMarket()
+{
+    static market m;
+
+    int systemIndex = 0;
+    marketGenerate(m, systemIndex, turnNumber());
+
+    marketShow(m);
+
+    // Let the player buy and sell in place.
+    for (;;)
+    {
+        cout << "  1) Buy   2) Sell   3) Sell all   0) Back" << endl << endl;
+
+        int choice = askInt("Choice: ", 0, 3);
+
+        if (choice == 0)
+            return;
+
+        if (choice == 1 || choice == 2)
+        {
+            char name[32];
+            askText("Commodity: ", name, sizeof(name));
+
+            int quantity = askInt("Quantity: ", 1, 100);
+
+            int moved = (choice == 1)
+                ? marketBuy(m, gameplayProfile().cargo, name, quantity)
+                : marketSell(m, gameplayProfile().cargo, name, quantity);
+
+            cout << endl;
+
+            if (moved > 0)
+                cout << "  Traded " << moved << " units." << endl;
+            else
+                cout << "  Nothing traded (no stock, no goods, or no credits)."
+                     << endl;
+
+            menuWait();
+            clearScreen();
+            marketShow(m);
+        }
+        else
+        {
+            int total = cargoSellAll(gameplayProfile().cargo, m);
+            cout << endl << "  Sold " << total << " units." << endl;
+            menuWait();
+            return;
+        }
+    }
+}
+
+void menuColonies()
+{
+    playerprofile &profile = gameplayProfile();
+
+    drawHeader("Colonies");
+
+    if (profile.colonyCount == 0)
+    {
+        out("No colonies founded yet.");
+        out("Survey a system, then settle a world from the System screen.");
+        cout << endl;
+        return;
+    }
+
+    for (int i = 0; i < profile.colonyCount; ++i)
+    {
+        const colony &c = profile.colonies[i];
+
+        cout << "  " << (i + 1) << ". " << c.name << endl;
+        cout << "      pop " << c.population
+             << "  dev " << c.development
+             << "  morale " << c.morale
+             << "  food " << c.food
+             << "  minerals " << c.minerals << endl;
+
+        cout << "      buildings:";
+
+        for (int b = 0; b < c.buildingCount && b < 8; ++b)
+        {
+            cout << " " << colonyBuildingName(c.buildings[b])
+                 << "(" << c.buildingLevel[b] << ")";
+        }
+
+        cout << endl;
+
+        if (c.underSiege)
+            cout << "      *** UNDER SIEGE ***" << endl;
+    }
+
+    cout << endl;
+}
+
+void menuSettleWorld()
+{
+    drawHeader("Settle a World");
+
+    if (systemWorldCount <= 0)
+    {
+        out("No systems generated.");
+        return;
+    }
+
+    cout << "  Enter a system index (1-" << systemWorldCount
+         << ") and a world index." << endl << endl;
+
+    int systemIndex = askInt("System: ", 1, systemWorldCount) - 1;
+
+    const systemworld &sys = systemWorldArray[systemIndex];
+
+    for (int i = 0; i < sys.worldCount && i < 8; ++i)
+    {
+        const world &w = sys.worlds[i];
+
+        cout << "   " << (i + 1) << ") " << w.name
+             << "  (" << planetClassName(w.klass) << ")"
+             << "  hab " << w.habitability
+             << "  res " << w.resources;
+
+        if (colonyCanSettle(systemIndex, i))
+            cout << "  [settleable]";
+        else
+            cout << "  [hostile]";
+
+        cout << endl;
+    }
+
+    cout << endl;
+
+    int worldIndex = askInt("World (0 to cancel): ", 0, sys.worldCount) - 1;
+
+    if (worldIndex < 0)
+        return;
+
+    int result = colonyFound(systemIndex, worldIndex);
+
+    cout << endl;
+
+    if (result >= 0)
+    {
+        out("Colony founded.");
+        drawFieldText("Name", gameplayProfile().colonies[result].name);
+    }
+    else if (result == -1)
+        out("Colony limit reached.");
+    else if (result == -2)
+        out("That world cannot be settled.");
+    else
+        out("Not enough credits to found a colony there.");
+
+    cout << endl;
+}
+
+void menuSkills()
+{
+    skillsShowAll(gameplayProfile());
+}
+
+void menuStandings()
+{
+    standingsShow(gameplayProfile());
+}
+
+void menuContracts()
+{
+    playerprofile &profile = gameplayProfile();
+
+    contractsShow(profile);
+
+    cout << "  1) Accept   2) Complete   3) Abandon   4) New offer   0) Back"
+         << endl << endl;
+
+    int choice = askInt("Choice: ", 0, 4);
+
+    if (choice == 0)
+        return;
+
+    clearScreen();
+
+    if (choice == 4)
+    {
+        int index = contractOffer(profile, 0, turnNumber());
+
+        if (index >= 0)
+            out("A new contract is on the board.");
+        else
+            out("The board is full.");
+
+        return;
+    }
+
+    int which = askInt("Contract number: ", 1, profile.contractCount);
+
+    if (choice == 1)
+    {
+        contractAccept(profile, which - 1);
+        out("Accepted.");
+    }
+    else if (choice == 2)
+    {
+        if (contractComplete(profile, which - 1))
+            out("Completed and paid.");
+        else
+            out("That contract is not finished yet.");
+    }
+    else
+    {
+        contractAbandon(profile, which - 1);
+        out("Abandoned. Standing with the giver fell.");
+    }
+}
+
+void menuMaterials()
+{
+    materialsShow(gameplayProfile());
+}
+
+void menuCrafting()
+{
+    playerprofile &profile = gameplayProfile();
+
+    recipesShow();
+
+    for (int i = 0; i < recipeCount(); ++i)
+    {
+        cout << "  " << (i + 1) << " ";
+
+        if (canCraft(profile, i))
+            cout << "[craftable]";
+        else
+            cout << "[missing materials]";
+
+        cout << endl;
+    }
+
+    cout << endl;
+
+    int which = askInt("Craft which (0 to cancel): ", 0, recipeCount());
+
+    if (which <= 0)
+        return;
+
+    clearScreen();
+
+    if (craftItem(profile, which - 1))
+        out("Crafted.");
+    else
+        out("Not enough materials.");
+
+    cout << endl;
+}
+
+void menuCodex()
+{
+    codexShow(gameplayProfile(), -1);
+}
+
+void menuScan()
+{
+    drawHeader("Sensor Sweep");
+
+    if (systemWorldCount <= 0)
+    {
+        out("No systems generated.");
+        return;
+    }
+
+    int which = askInt("Scan which system? ", 1, systemWorldCount) - 1;
+
+    int found = scanSystem(which);
+
+    cout << endl;
+    drawField("New discoveries", found);
+
+    cout << endl;
+}
+
+void gameplayMenu()
+{
+    static const char *entries[] = {
+        "Cargo hold",
+        "Market",
+        "Colonies",
+        "Settle a world",
+        "Skills",
+        "Reputation",
+        "Contracts",
+        "Materials",
+        "Crafting",
+        "Codex",
+        "Sensor sweep"};
+
+    static void (*handlers[])() = {
+        menuCargo,
+        menuMarket,
+        menuColonies,
+        menuSettleWorld,
+        menuSkills,
+        menuStandings,
+        menuContracts,
+        menuMaterials,
+        menuCrafting,
+        menuCodex,
+        menuScan};
+
+    runSubMenu("Gameplay", entries, handlers, 11);
 }

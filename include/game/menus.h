@@ -25,6 +25,10 @@ void empireMenu();
 // Turn: status, history, steps, scheduled jobs.
 void turnMenu();
 
+// Gameplay: cargo, market, colonies, skills, reputation, contracts,
+// materials, crafting, codex, scanning.
+void gameplayMenu();
+
 /* ---------------- map sub-menus ---------------- */
 
 void menuUniverseOverview(); // universe totals + sector list

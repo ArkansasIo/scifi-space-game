@@ -74,6 +74,12 @@ int main()
     schedulerInit();
     schedulerInstallDefaults();
 
+    // Player gameplay state: cargo, skills, standings, contracts, colonies.
+    // Initialised after the universe and faction tables, which the standings
+    // list is built from.
+    loadingStep("player gameplay systems");
+    gameplayInit();
+
     endLoadingScreen();
 
     /* ---- title screen ---- */
@@ -138,6 +144,12 @@ int main()
         {
             // Turn / scheduler status.
             turnMenu();
+            continue;
+        }
+        else if (move == 'P' || move == 'G')
+        {
+            // Player / gameplay systems.
+            gameplayMenu();
             continue;
         }
         else

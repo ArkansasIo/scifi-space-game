@@ -77,6 +77,7 @@ $sources = @(
     "src/game/galaxy.c++",
     "src/game/turn.c++",
     "src/game/scheduler.c++",
+    "src/game/gameplay.c++",
     "src/game/menus.c++",
     "src/game/gamelogic.c++"
 )
